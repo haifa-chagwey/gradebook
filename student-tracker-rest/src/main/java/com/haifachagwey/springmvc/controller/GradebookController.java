@@ -5,7 +5,6 @@ import com.haifachagwey.springmvc.exceptionhandling.StudentOrGradeNotFoundExcept
 import com.haifachagwey.springmvc.models.CollegeStudent;
 import com.haifachagwey.springmvc.models.Gradebook;
 import com.haifachagwey.springmvc.models.GradebookCollegeStudent;
-import com.haifachagwey.springmvc.models.*;
 import com.haifachagwey.springmvc.service.StudentAndGradeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,7 @@ public class GradebookController {
 
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public List<GradebookCollegeStudent> getStudents() {
+    public List<GradebookCollegeStudent> getGradebook() {
         gradebook = studentService.getGradebook();
         return gradebook.getStudents();
     }

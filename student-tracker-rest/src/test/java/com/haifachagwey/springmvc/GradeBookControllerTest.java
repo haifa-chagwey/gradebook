@@ -3,16 +3,13 @@ package com.haifachagwey.springmvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.haifachagwey.springmvc.models.CollegeStudent;
 import com.haifachagwey.springmvc.models.MathGrade;
-import com.haifachagwey.springmvc.repository.HistoryGradesDao;
 import com.haifachagwey.springmvc.repository.MathGradesDao;
-import com.haifachagwey.springmvc.repository.ScienceGradesDao;
 import com.haifachagwey.springmvc.repository.StudentDao;
 import com.haifachagwey.springmvc.service.StudentAndGradeService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,6 +32,8 @@ import static org.hamcrest.Matchers.is;
 
 // How can we verify HTTP response (status code, content type and JSON response body)?
 
+// Integration tests
+
 @TestPropertySource("/application-test.properties")
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -49,8 +48,8 @@ public class GradeBookControllerTest {
     @Autowired
     private StudentAndGradeService studentAndGradeService;
 
-    @Mock
-    private StudentAndGradeService studentCreateServiceMock;
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @Autowired
     private MockMvc mockMvc;
@@ -59,25 +58,10 @@ public class GradeBookControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private CollegeStudent collegeStudent;
-
-    @Autowired
-    private JdbcTemplate jdbc;
-
-    @Autowired
     private StudentDao studentDao;
 
     @Autowired
     private MathGradesDao mathGradeDao;
-
-    @Autowired
-    private ScienceGradesDao scienceGradeDao;
-
-    @Autowired
-    private HistoryGradesDao historyGradeDao;
-
-    @Autowired
-    private CollegeStudent student;
 
     @Value("${sql.script.create.student}")
     private String sqlAddStudent;
@@ -122,10 +106,11 @@ public class GradeBookControllerTest {
     }
 
     @Test
-    public void getStudentsHttpRequest() throws Exception {
-        student.setFirstname("Chad");
-        student.setLastname("Darby");
-        student.setEmailAddress("chad.darby@luv2code.com");
+    public void getGradebookHttpRequest() throws Exception {
+        CollegeStudent student = new CollegeStudent();
+        student.setFirstname(request.getParameter("firstname"));
+        student.setLastname(request.getParameter("lastname"));
+        student.setEmailAddress(request.getParameter("emailAddress"));
         entityManager.persist(student);
         entityManager.flush();
         // Send the http request
@@ -140,10 +125,35 @@ public class GradeBookControllerTest {
     }
 
     @Test
+    public void getStudentHttpRequest() throws Exception {
+        Optional<CollegeStudent> student = studentDao.findById(1);
+        assertTrue(student.isPresent());
+        mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}", 1))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.firstname", is("Eric")))
+                .andExpect(jsonPath("$.lastname", is("Roby")))
+                .andExpect(jsonPath("$.emailAddress", is("eric.roby@gmail.com")));
+    }
+
+    @Test
+    public void getNonExistentStudentHttpRequest() throws Exception {
+        Optional<CollegeStudent> student = studentDao.findById(0);
+        assertFalse(student.isPresent());
+        mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}", 0))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status", is(404)))
+                .andExpect(jsonPath("$.message", is("Student or Grade was not found")));
+    }
+
+
+    @Test
     public void createStudentHttpRequest() throws Exception {
-        student.setFirstname("Chad");
-        student.setLastname("Darby");
-        student.setEmailAddress("chad.darby@luv2code.com");
+        CollegeStudent student = new CollegeStudent();
+        student.setFirstname(request.getParameter("firstname"));
+        student.setLastname(request.getParameter("lastname"));
+        student.setEmailAddress(request.getParameter("emailAddress"));
         mockMvc.perform(post("/")
                 .contentType(MediaType.APPLICATION_JSON)
                 // ObjectMapper is from Jackson API
@@ -166,7 +176,7 @@ public class GradeBookControllerTest {
     }
 
     @Test
-    public void deleteStudentHttpRequestErrorPage() throws Exception{
+    public void deleteNonExistentStudentHttpRequest() throws Exception {
         assertFalse(studentDao.findById(0).isPresent());
         mockMvc.perform(MockMvcRequestBuilders.delete("/student/{id}", 0))
                 .andExpect(status().is4xxClientError())
@@ -174,31 +184,10 @@ public class GradeBookControllerTest {
                 .andExpect(jsonPath("$.message", is("Student or Grade was not found")));
     }
 
-    @Test
-    public void studentInformationHttpRequest() throws Exception {
-        Optional<CollegeStudent> student = studentDao.findById(1);
-        assertTrue(student.isPresent());
-        mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}", 1))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.firstname", is("Eric")))
-                .andExpect(jsonPath("$.lastname", is("Roby")))
-                .andExpect(jsonPath("$.emailAddress", is("eric.roby@gmail.com")));
-    }
+    // Grades
 
     @Test
-    public void studentInformationHttpRequestEmptyResponse() throws Exception {
-        Optional<CollegeStudent> student = studentDao.findById(0);
-        assertFalse(student.isPresent());
-        mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}", 0))
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.status", is(404)))
-                .andExpect(jsonPath("$.message", is("Student or Grade was not found")));
-    }
-
-    @Test
-    public void createAValidGradeHttpRequest() throws Exception {
+    public void createGradeHttpRequest() throws Exception {
         this.mockMvc.perform(post("/grades")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("grade", "85.00")
@@ -215,7 +204,7 @@ public class GradeBookControllerTest {
 
     // Create a grade for a student id that does not exist
     @Test
-    public void createAValidGradeHttpRequestStudentDoesNotExistEmptyResponse() throws Exception {
+    public void createGradeForNonExistentStudentHttpRequest() throws Exception {
         this.mockMvc.perform(post("/grades")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("grade", "85.00")
@@ -228,7 +217,7 @@ public class GradeBookControllerTest {
 
     // Create a grade for invalid grade type / subject
     @Test
-    public void createANonValidGradeHttpRequestGradeTypeDoesNotExistEmptyResponse() throws Exception{
+    public void createGradeWhereGradeTypeDoesNotExistHttpRequest() throws Exception{
         this.mockMvc.perform(post("/grades")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("grade", "85.00")
@@ -240,7 +229,7 @@ public class GradeBookControllerTest {
     }
 
     @Test
-    public void deleteAValidGradeHttpRequest() throws Exception {
+    public void deleteGradeHttpRequest() throws Exception {
         Optional<MathGrade> mathGrade = mathGradeDao.findById(1);
         assertTrue(mathGrade.isPresent());
         mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}", 1, "math"))
@@ -254,7 +243,7 @@ public class GradeBookControllerTest {
     }
 
     @Test
-    public void deleteAValidGradeHttpRequestStudentIdDoesNotExistEmptyResponse() throws Exception {
+    public void deleteGradeForNonExistentStudentHttpRequest() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/gradeType", 2, "history"))
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.status", is(404)))
@@ -262,7 +251,7 @@ public class GradeBookControllerTest {
     }
 
     @Test
-    public void deleteANonValidGradeHttpRequest() throws Exception {
+    public void deleteGradeWhereGradeTypeDoesNotExist() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}", 1 , "literature"))
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.status", is(404)))
