@@ -172,7 +172,7 @@ public class StudentAndGradeService {
     }
 
     // Get student information by its id
-    public GradebookCollegeStudent studentInformation(int studentId) {
+    public GradebookCollegeStudent getStudent(int studentId) {
         if (!checkIfStudentExist(studentId)) {
             return null;
         }
@@ -201,7 +201,7 @@ public class StudentAndGradeService {
 
     public void configureStudentInformationModel(int studentId, Model model) {
 
-        GradebookCollegeStudent studentEntity = studentInformation(studentId);
+        GradebookCollegeStudent studentEntity = getStudent(studentId);
 
         model.addAttribute("student", studentEntity);
         if (studentEntity.getStudentGrades().getMathGradeResults().size() > 0) {

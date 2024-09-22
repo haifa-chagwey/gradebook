@@ -107,7 +107,6 @@ public class GradebookControllerTest {
                 .andExpect(status().isOk()).andReturn();
         ModelAndView modelAndView = mvcResult.getModelAndView();
         ModelAndViewAssert.assertViewName(modelAndView, "index");
-
         List<GradebookCollegeStudent> studentList = (List<GradebookCollegeStudent>) modelAndView.getModel().get("students");
         assertEquals(1, studentList.size());
         assertEquals("Haifa", studentList.get(0).getFirstname());
@@ -124,9 +123,7 @@ public class GradebookControllerTest {
                 .andExpect(status().isOk()).andReturn();
         ModelAndView modelAndView = mvcResult.getModelAndView();
         ModelAndViewAssert.assertViewName(modelAndView, "index");
-
         CollegeStudent verifyStudent = studentDao.findByEmailAddress("eric.roby@gmail.com");
-
         assertNotNull(verifyStudent, "Student should be found after create");
     }
 
@@ -145,13 +142,12 @@ public class GradebookControllerTest {
 //    The delete student function that we have implemented should return an error page when the student does not exist
     @Test
     @Order(3)
-    public void deleteStudentsHttpRequestErrorPage() throws Exception {
+    public void deleteNonExistentStudentsHttpRequest() throws Exception {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
                 .get("/delete/student/{id}", 0))
                 .andExpect(status().isOk()).andReturn();
         ModelAndView modelAndView = mvcResult.getModelAndView();
         ModelAndViewAssert.assertViewName(modelAndView, "error");
-
     }
 
     @Test
@@ -181,7 +177,7 @@ public class GradebookControllerTest {
     public void createMathGradeHttpRequest() throws Exception {
         // Check that the student exists
         assertTrue(studentDao.findById(1).isPresent());
-        GradebookCollegeStudent student = studentAndGradeService.studentInformation(1);
+        GradebookCollegeStudent student = studentAndGradeService.getStudent(1);
         assertEquals(1, student.getStudentGrades().getMathGradeResults().size());
 
         MvcResult mvcResult = this.mockMvc.perform(post("/grades")
@@ -192,7 +188,7 @@ public class GradebookControllerTest {
                 .andExpect(status().isOk()).andReturn();
         ModelAndView modelAndView = mvcResult.getModelAndView();
         ModelAndViewAssert.assertViewName(modelAndView, "studentInformation");
-        student = studentAndGradeService.studentInformation(1);
+        student = studentAndGradeService.getStudent(1);
         assertEquals(2, student.getStudentGrades().getMathGradeResults().size());
     }
 
@@ -201,7 +197,7 @@ public class GradebookControllerTest {
     public void createScienceGradeHttpRequest() throws Exception {
         // Check that the student exists
         assertTrue(studentDao.findById(1).isPresent());
-        GradebookCollegeStudent student = studentAndGradeService.studentInformation(1);
+        GradebookCollegeStudent student = studentAndGradeService.getStudent(1);
         assertEquals(1, student.getStudentGrades().getScienceGradeResults().size());
 
         MvcResult mvcResult = this.mockMvc.perform(post("/grades")
@@ -212,7 +208,7 @@ public class GradebookControllerTest {
                 .andExpect(status().isOk()).andReturn();
         ModelAndView modelAndView = mvcResult.getModelAndView();
         ModelAndViewAssert.assertViewName(modelAndView, "studentInformation");
-        student = studentAndGradeService.studentInformation(1);
+        student = studentAndGradeService.getStudent(1);
         assertEquals(2, student.getStudentGrades().getScienceGradeResults().size());
     }
 
@@ -221,7 +217,7 @@ public class GradebookControllerTest {
     public void createHistoryGradeHttpRequest() throws Exception {
         // Check that the student exists
         assertTrue(studentDao.findById(1).isPresent());
-        GradebookCollegeStudent student = studentAndGradeService.studentInformation(1);
+        GradebookCollegeStudent student = studentAndGradeService.getStudent(1);
         assertEquals(1, student.getStudentGrades().getHistoryGradeResults().size());
 
         MvcResult mvcResult = this.mockMvc.perform(post("/grades")
@@ -232,14 +228,14 @@ public class GradebookControllerTest {
                 .andExpect(status().isOk()).andReturn();
         ModelAndView modelAndView = mvcResult.getModelAndView();
         ModelAndViewAssert.assertViewName(modelAndView, "studentInformation");
-        student = studentAndGradeService.studentInformation(1);
+        student = studentAndGradeService.getStudent(1);
         assertEquals(2, student.getStudentGrades().getHistoryGradeResults().size());
     }
 
 //    We have to verify that the function that we have implemented should return an error page when the student does not exist
     @Test
     @Order(9)
-    public void createValidGradeForNonExistentStudentHttpRequest() throws Exception {
+    public void createGradeForNonExistentStudentHttpRequest() throws Exception {
         assertFalse(studentDao.findById(0).isPresent());
         MvcResult mvcResult = this.mockMvc.perform(post("/grades")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -253,8 +249,8 @@ public class GradebookControllerTest {
 
 //    We have to verify that the function that we have implemented should return an error page when the grade type does not exist
     @Test
-    @Order(8)
-    public void createValidGradeWhenGradeTypeDoesNotExistHttpRequest() throws Exception {
+    @Order(10)
+    public void createGradeWhenGradeTypeDoesNotExistHttpRequest() throws Exception {
         MvcResult mvcResult = this.mockMvc.perform(post("/grades")
                 .contentType(MediaType.APPLICATION_JSON)
                         .param("grade", "85.00")

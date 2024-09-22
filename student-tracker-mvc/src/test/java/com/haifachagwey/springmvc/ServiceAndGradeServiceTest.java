@@ -135,22 +135,18 @@ public class ServiceAndGradeServiceTest {
         assertFalse(deletedHistoryGrade.isPresent(),"Should return false");
     }
 
-
+    // Grades
 
     @Test
     public void createGradeService() {
-        // Create the grade for the syudent that we have created during SetupDatabase funtion
+        // Create the grade for the student that we have created during SetupDatabase function
         assertTrue(studentAndGradeService.createGrade(80.50, 1, "math"));
         assertTrue(studentAndGradeService.createGrade(80.50, 1, "science"));
         assertTrue(studentAndGradeService.createGrade(80.50, 1, "history"));
-        // Get all grades with studentId
+        // Get grades by student i  d
         Iterable<MathGrade> mathGrades = mathGradeDao.findGradeByStudentId(1);
         Iterable<ScienceGrade> scienceGrades = scienceGradeDao.findGradeByStudentId(1);
         Iterable<HistoryGrade> historyGrades = historyGradeDao.findGradeByStudentId(1);
-        // Verify there is grades
-//        assertTrue(mathGrades.iterator().hasNext(), "Student has math grades");
-//        assertTrue(scienceGrades.iterator().hasNext());
-//        assertTrue(historyGrades.iterator().hasNext());
         // Cast Iterable to connection this will allow us to access the size of the collection
         assertTrue(((Collection<MathGrade>) mathGrades).size() == 2, "Student has math grades");
         assertTrue(((Collection<ScienceGrade>) scienceGrades).size() == 2, "Student has science grades");
@@ -158,14 +154,14 @@ public class ServiceAndGradeServiceTest {
     }
 
     @Test
-    public void createGradeServiceReturnFalse() {
+    public void createInvalidGradeService() {
         // Outside of range 0 - 100
         assertFalse(studentAndGradeService.createGrade(105,1, "math"));
         assertFalse(studentAndGradeService.createGrade(-5,1, "math"));
         // Invalid student id
-        assertFalse(studentAndGradeService.createGrade(-5,2, "math"));
+        assertFalse(studentAndGradeService.createGrade(55,2, "math"));
         // Invalid Subject
-        assertFalse(studentAndGradeService.createGrade(-5,2, "literature"));
+        assertFalse(studentAndGradeService.createGrade(45,2, "literature"));
     }
 
     @Test
@@ -176,15 +172,14 @@ public class ServiceAndGradeServiceTest {
     }
 
     @Test
-    public void deleteGradeServiceReturnStudentIdOfZero(){
+    public void deleteGradeForNonExistentStudentService(){
         assertEquals(0, studentAndGradeService.deleteGrade(0, "science"), "No student should have 0 id");
-        assertEquals(0, studentAndGradeService.deleteGrade(0, "literature"), "No student should have a literature class");
+        assertEquals(0, studentAndGradeService.deleteGrade(1, "literature"), "No student should have a literature class");
     }
 
     @Test
-    public void studentInformation() {
-        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.studentInformation(1);
-
+    public void getStudentService() {
+        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.getStudent(1);
         assertNotNull(gradebookCollegeStudent);
         assertEquals(1, gradebookCollegeStudent.getId());
         assertEquals("Haifa", gradebookCollegeStudent.getFirstname());
@@ -196,8 +191,8 @@ public class ServiceAndGradeServiceTest {
     }
 
     @Test
-    public void studentInformationServiceReturnNull() {
-        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.studentInformation(0);
+    public void getNonExistentStudentService() {
+        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.getStudent(0);
         assertNull(gradebookCollegeStudent);
     }
 
