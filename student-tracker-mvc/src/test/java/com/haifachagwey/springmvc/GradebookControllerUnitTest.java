@@ -30,9 +30,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-//  How can we test Spring MVC web controllers?
-//  How we can create HTTP request and send to the controller?
-//  How can we verify HTTP response (status code, view name, model attributes)?
+
 
 @AutoConfigureMockMvc
 @SpringBootTest

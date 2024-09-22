@@ -12,13 +12,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
+import org.springframework.test.context.jdbc.SqlGroup;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+//  How can we test Spring MVC web controllers?
+//  How we can create HTTP request and send to the controller?
+//  How can we verify HTTP response (status code, view name, model attributes)?
+
+// In Spring Boot, if an embedded database is listed as a dependency then Spring Boot will auto-configure the database connection
+// Our project has H2 as a dependency, so Spring Boot will auto-configure a connection to the embedded H2 database
+
 @TestPropertySource("/application-test.properties")
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -28,7 +36,7 @@ public class ServiceAndGradeServiceTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private StudentAndGradeService studentService;
+    private StudentAndGradeService studentAndGradeService;
 
     @Autowired
     private StudentDao studentDao;
@@ -74,28 +82,31 @@ public class ServiceAndGradeServiceTest {
         jdbc.execute(sqlAddHistoryStudent);
     }
 
+    @SqlGroup({ @Sql(scripts = "/insertData.sql", config = @SqlConfig(commentPrefix = "`")),
+            @Sql("/overrideData.sql"),
+            @Sql("/insertGrade.sql")})
     @Test
-    public void getGradeBookService(){
-        Gradebook gradebook = studentService.getGradebook();
-        List<CollegeStudent> collegeStudents = new ArrayList<>();
-        for (CollegeStudent collegeStudent : gradebook.getStudents()) {
-            collegeStudents.add(collegeStudent);
+    public void getGradebookService() {
+        Gradebook gradebook = studentAndGradeService.getGradebook();
+        Gradebook gradebookTest = new Gradebook();
+        for (GradebookCollegeStudent student : gradebook.getStudents()) {
+            gradebookTest.getStudents().add(student);
         }
-        assertEquals(1, collegeStudents.size());
+        assertEquals(5, gradebookTest.getStudents().size());
     }
 
     @Test
     @Order(0)
     public void createStudentService() {
-        studentService.createStudent("test","test", "test@gmail.com");
+        studentAndGradeService.createStudent("test","test", "test@gmail.com");
         CollegeStudent student = studentDao.findByEmailAddress("test@gmail.com");
         assertEquals("test@gmail.com", student.getEmailAddress(),"Find by email");
     }
     @Test
     @Order(1)
     public void checkIfStudentExistService() {
-        assertTrue(studentService.checkIfStudentExist(1), "Should returns true because student exist");
-        assertFalse(studentService.checkIfStudentExist(0), "Should returns false because student does not exist");
+        assertTrue(studentAndGradeService.checkIfStudentExist(1), "Should returns true because student exist");
+        assertFalse(studentAndGradeService.checkIfStudentExist(0), "Should returns false because student does not exist");
     }
 
     @Test
@@ -111,7 +122,7 @@ public class ServiceAndGradeServiceTest {
         assertTrue(deletedScienceGrade.isPresent(), "Should returns True");
         assertTrue(deletedHistoryGrade.isPresent(), "Should returns True");
 
-        studentService.deleteStudent(1);
+        studentAndGradeService.deleteStudent(1);
 
         deletedCollegeStudent = studentDao.findById(1);
         deletedMathGrade = mathGradeDao.findById(1);
@@ -129,9 +140,9 @@ public class ServiceAndGradeServiceTest {
     @Test
     public void createGradeService() {
         // Create the grade for the syudent that we have created during SetupDatabase funtion
-        assertTrue(studentService.createGrade(80.50, 1, "math"));
-        assertTrue(studentService.createGrade(80.50, 1, "science"));
-        assertTrue(studentService.createGrade(80.50, 1, "history"));
+        assertTrue(studentAndGradeService.createGrade(80.50, 1, "math"));
+        assertTrue(studentAndGradeService.createGrade(80.50, 1, "science"));
+        assertTrue(studentAndGradeService.createGrade(80.50, 1, "history"));
         // Get all grades with studentId
         Iterable<MathGrade> mathGrades = mathGradeDao.findGradeByStudentId(1);
         Iterable<ScienceGrade> scienceGrades = scienceGradeDao.findGradeByStudentId(1);
@@ -149,30 +160,30 @@ public class ServiceAndGradeServiceTest {
     @Test
     public void createGradeServiceReturnFalse() {
         // Outside of range 0 - 100
-        assertFalse(studentService.createGrade(105,1, "math"));
-        assertFalse(studentService.createGrade(-5,1, "math"));
+        assertFalse(studentAndGradeService.createGrade(105,1, "math"));
+        assertFalse(studentAndGradeService.createGrade(-5,1, "math"));
         // Invalid student id
-        assertFalse(studentService.createGrade(-5,2, "math"));
+        assertFalse(studentAndGradeService.createGrade(-5,2, "math"));
         // Invalid Subject
-        assertFalse(studentService.createGrade(-5,2, "literature"));
+        assertFalse(studentAndGradeService.createGrade(-5,2, "literature"));
     }
 
     @Test
     public void deleteGradeService() {
-        assertEquals(1, studentService.deleteGrade(1, "math"), "Returns id after delete");
-        assertEquals(1, studentService.deleteGrade(1, "science"), "Returns id after delete");
-        assertEquals(1, studentService.deleteGrade(1, "history"), "Returns id after delete");
+        assertEquals(1, studentAndGradeService.deleteGrade(1, "math"), "Returns id after delete");
+        assertEquals(1, studentAndGradeService.deleteGrade(1, "science"), "Returns id after delete");
+        assertEquals(1, studentAndGradeService.deleteGrade(1, "history"), "Returns id after delete");
     }
 
     @Test
     public void deleteGradeServiceReturnStudentIdOfZero(){
-        assertEquals(0, studentService.deleteGrade(0, "science"), "No student should have 0 id");
-        assertEquals(0, studentService.deleteGrade(0, "literature"), "No student should have a literature class");
+        assertEquals(0, studentAndGradeService.deleteGrade(0, "science"), "No student should have 0 id");
+        assertEquals(0, studentAndGradeService.deleteGrade(0, "literature"), "No student should have a literature class");
     }
 
     @Test
     public void studentInformation() {
-        GradebookCollegeStudent gradebookCollegeStudent = studentService.studentInformation(1);
+        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.studentInformation(1);
 
         assertNotNull(gradebookCollegeStudent);
         assertEquals(1, gradebookCollegeStudent.getId());
@@ -186,7 +197,7 @@ public class ServiceAndGradeServiceTest {
 
     @Test
     public void studentInformationServiceReturnNull() {
-        GradebookCollegeStudent gradebookCollegeStudent = studentService.studentInformation(0);
+        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.studentInformation(0);
         assertNull(gradebookCollegeStudent);
     }
 
