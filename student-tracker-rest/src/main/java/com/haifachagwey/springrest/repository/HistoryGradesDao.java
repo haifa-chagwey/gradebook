@@ -1,6 +1,6 @@
-package com.haifachagwey.springmvc.repository;
+package com.haifachagwey.springrest.repository;
 
-import com.haifachagwey.springmvc.models.HistoryGrade;
+import com.haifachagwey.springrest.models.HistoryGrade;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

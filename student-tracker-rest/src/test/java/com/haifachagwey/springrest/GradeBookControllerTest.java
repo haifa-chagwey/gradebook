@@ -1,11 +1,11 @@
-package com.haifachagwey.springmvc;
+package com.haifachagwey.springrest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.haifachagwey.springmvc.models.CollegeStudent;
-import com.haifachagwey.springmvc.models.MathGrade;
-import com.haifachagwey.springmvc.repository.MathGradesDao;
-import com.haifachagwey.springmvc.repository.StudentDao;
-import com.haifachagwey.springmvc.service.StudentAndGradeService;
+import com.haifachagwey.springrest.models.CollegeStudent;
+import com.haifachagwey.springrest.models.MathGrade;
+import com.haifachagwey.springrest.repository.MathGradesDao;
+import com.haifachagwey.springrest.repository.StudentDao;
+import com.haifachagwey.springrest.service.StudentAndGradeService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

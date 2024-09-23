@@ -1,6 +1,6 @@
-package com.haifachagwey.springmvc.repository;
+package com.haifachagwey.springrest.repository;
 
-import com.haifachagwey.springmvc.models.CollegeStudent;
+import com.haifachagwey.springrest.models.CollegeStudent;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

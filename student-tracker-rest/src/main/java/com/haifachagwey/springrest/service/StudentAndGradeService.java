@@ -1,11 +1,10 @@
-package com.haifachagwey.springmvc.service;
+package com.haifachagwey.springrest.service;
 
-import com.haifachagwey.springmvc.models.*;
-import com.haifachagwey.springmvc.models.*;
-import com.haifachagwey.springmvc.repository.HistoryGradesDao;
-import com.haifachagwey.springmvc.repository.MathGradesDao;
-import com.haifachagwey.springmvc.repository.ScienceGradesDao;
-import com.haifachagwey.springmvc.repository.StudentDao;
+import com.haifachagwey.springrest.models.*;
+import com.haifachagwey.springrest.repository.HistoryGradesDao;
+import com.haifachagwey.springrest.repository.MathGradesDao;
+import com.haifachagwey.springrest.repository.ScienceGradesDao;
+import com.haifachagwey.springrest.repository.StudentDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -49,16 +48,12 @@ public class StudentAndGradeService {
     StudentGrades studentGrades;
 
 	public void createStudent(String firstname, String lastname, String emailAddress){
-
 		CollegeStudent student = new CollegeStudent(firstname, lastname, emailAddress);
-
-		student.setId(0);
-
 		studentDao.save(student);
 	}
 
 	public void deleteStudent(int id){
-		if (checkIfStudentIsNull(id)) {
+		if (checkIfStudentExists(id)) {
 			studentDao.deleteById(id);
 			mathGradeDao.deleteByStudentId(id);
 			scienceGradeDao.deleteByStudentId(id);
@@ -66,7 +61,7 @@ public class StudentAndGradeService {
 		}
 	}
 
-	public boolean checkIfStudentIsNull(int id){
+	public boolean checkIfStudentExists(int id){
 		Optional<CollegeStudent> student = studentDao.findById(id);
 		if (student.isPresent()) {
 			return true;
@@ -107,7 +102,7 @@ public class StudentAndGradeService {
 		return gradebookCollegeStudent;
 	}
 
-	public boolean checkIfGradeIsNull(int id, String gradeType){
+	public boolean checkIfGradeExists(int id, String gradeType){
 		if (gradeType.equals("math")) {
 			Optional<MathGrade> grade = mathGradeDao.findById(id);
 			if (grade.isPresent()) {

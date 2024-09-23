@@ -1,4 +1,4 @@
-package com.haifachagwey.springmvc;
+package com.haifachagwey.springrest;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;

@@ -1,4 +1,4 @@
-package com.haifachagwey.springmvc.models;
+package com.haifachagwey.springrest.models;
 
 public class GradebookCollegeStudent extends CollegeStudent{
 

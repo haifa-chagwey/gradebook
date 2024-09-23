@@ -1,4 +1,4 @@
-package com.haifachagwey.springmvc.exceptionhandling;
+package com.haifachagwey.springrest.exceptionhandling;
 
 public class StudentOrGradeErrorResponse {
 

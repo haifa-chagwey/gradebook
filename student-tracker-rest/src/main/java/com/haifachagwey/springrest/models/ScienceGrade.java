@@ -1,4 +1,4 @@
-package com.haifachagwey.springmvc.models;
+package com.haifachagwey.springrest.models;
 
 import javax.persistence.*;
 

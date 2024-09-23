@@ -1,11 +1,11 @@
-package com.haifachagwey.springmvc.controller;
+package com.haifachagwey.springrest.controller;
 
-import com.haifachagwey.springmvc.exceptionhandling.StudentOrGradeErrorResponse;
-import com.haifachagwey.springmvc.exceptionhandling.StudentOrGradeNotFoundException;
-import com.haifachagwey.springmvc.models.CollegeStudent;
-import com.haifachagwey.springmvc.models.Gradebook;
-import com.haifachagwey.springmvc.models.GradebookCollegeStudent;
-import com.haifachagwey.springmvc.service.StudentAndGradeService;
+import com.haifachagwey.springrest.exceptionhandling.StudentOrGradeErrorResponse;
+import com.haifachagwey.springrest.exceptionhandling.StudentOrGradeNotFoundException;
+import com.haifachagwey.springrest.models.CollegeStudent;
+import com.haifachagwey.springrest.models.Gradebook;
+import com.haifachagwey.springrest.models.GradebookCollegeStudent;
+import com.haifachagwey.springrest.service.StudentAndGradeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +33,7 @@ public class GradebookController {
     @GetMapping("/studentInformation/{id}")
     public GradebookCollegeStudent studentInformation(@PathVariable int id) {
 
-        if (!studentService.checkIfStudentIsNull(id)) {
+        if (!studentService.checkIfStudentExists(id)) {
             throw new StudentOrGradeNotFoundException("Student or Grade was not found");
         }
         GradebookCollegeStudent studentEntity = studentService.studentInformation(id);
@@ -54,7 +54,7 @@ public class GradebookController {
     @DeleteMapping("/student/{id}")
     public List<GradebookCollegeStudent> deleteStudent(@PathVariable int id) {
 
-        if (!studentService.checkIfStudentIsNull(id)) {
+        if (!studentService.checkIfStudentExists(id)) {
             throw new StudentOrGradeNotFoundException("Student or Grade was not found");
         }
 
@@ -69,7 +69,7 @@ public class GradebookController {
                                                @RequestParam("gradeType") String gradeType,
                                                @RequestParam("studentId") int studentId) {
 
-        if (!studentService.checkIfStudentIsNull(studentId)) {
+        if (!studentService.checkIfStudentExists(studentId)) {
             throw new StudentOrGradeNotFoundException("Student or Grade was not found");
         }
 

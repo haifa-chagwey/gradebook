@@ -1,7 +1,6 @@
-package com.haifachagwey.springmvc;
+package com.haifachagwey.springrest;
 
-import com.haifachagwey.springmvc.models.*;
-import com.haifachagwey.springmvc.models.*;
+import com.haifachagwey.springrest.models.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
