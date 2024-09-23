@@ -86,6 +86,7 @@ public class ServiceAndGradeServiceTest {
             @Sql("/overrideData.sql"),
             @Sql("/insertGrade.sql")})
     @Test
+    @Order(0)
     public void getGradebookService() {
         Gradebook gradebook = studentAndGradeService.getGradebook();
         Gradebook gradebookTest = new Gradebook();
@@ -96,13 +97,6 @@ public class ServiceAndGradeServiceTest {
     }
 
     @Test
-    @Order(0)
-    public void createStudentService() {
-        studentAndGradeService.createStudent("test","test", "test@gmail.com");
-        CollegeStudent student = studentDao.findByEmailAddress("test@gmail.com");
-        assertEquals("test@gmail.com", student.getEmailAddress(),"Find by email");
-    }
-    @Test
     @Order(1)
     public void checkIfStudentExistService() {
         assertTrue(studentAndGradeService.checkIfStudentExist(1), "Should returns true because student exist");
@@ -110,6 +104,15 @@ public class ServiceAndGradeServiceTest {
     }
 
     @Test
+    @Order(2)
+    public void createStudentService() {
+        studentAndGradeService.createStudent("test","test", "test@gmail.com");
+        CollegeStudent student = studentDao.findByEmailAddress("test@gmail.com");
+        assertEquals("test@gmail.com", student.getEmailAddress(),"Student should exist");
+    }
+
+    @Test
+    @Order(3)
     // Delete the student created during setupDatabase function (@Before each)
     public void deleteStudentService() {
         Optional<CollegeStudent> deletedCollegeStudent = studentDao.findById(1);
@@ -135,9 +138,31 @@ public class ServiceAndGradeServiceTest {
         assertFalse(deletedHistoryGrade.isPresent(),"Should return false");
     }
 
+    @Test
+    @Order(4)
+    public void getStudentService() {
+        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.getStudent(1);
+        assertNotNull(gradebookCollegeStudent);
+        assertEquals(1, gradebookCollegeStudent.getId());
+        assertEquals("Haifa", gradebookCollegeStudent.getFirstname());
+        assertEquals("Chagwey", gradebookCollegeStudent.getLastname());
+        assertEquals("haifachagwey@gmail.com", gradebookCollegeStudent.getEmailAddress());
+        assertTrue(gradebookCollegeStudent.getStudentGrades().getMathGradeResults().size() == 1);
+        assertTrue(gradebookCollegeStudent.getStudentGrades().getScienceGradeResults().size()== 1);
+        assertTrue(gradebookCollegeStudent.getStudentGrades().getHistoryGradeResults().size()== 1);
+    }
+
+    @Test
+    @Order(5)
+    public void getNonExistentStudentService() {
+        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.getStudent(0);
+        assertNull(gradebookCollegeStudent);
+    }
+
     // Grades
 
     @Test
+    @Order(6)
     public void createGradeService() {
         // Create the grade for the student that we have created during SetupDatabase function
         assertTrue(studentAndGradeService.createGrade(80.50, 1, "math"));
@@ -154,17 +179,19 @@ public class ServiceAndGradeServiceTest {
     }
 
     @Test
+    @Order(7)
     public void createInvalidGradeService() {
-        // Outside of range 0 - 100
+        // Create grade outside of range 0 - 100
         assertFalse(studentAndGradeService.createGrade(105,1, "math"));
         assertFalse(studentAndGradeService.createGrade(-5,1, "math"));
-        // Invalid student id
+        // Create grade for non existent student
         assertFalse(studentAndGradeService.createGrade(55,2, "math"));
-        // Invalid Subject
+        // Create invalid grade where grade type does not exist
         assertFalse(studentAndGradeService.createGrade(45,2, "literature"));
     }
 
     @Test
+    @Order(8)
     public void deleteGradeService() {
         assertEquals(1, studentAndGradeService.deleteGrade(1, "math"), "Returns id after delete");
         assertEquals(1, studentAndGradeService.deleteGrade(1, "science"), "Returns id after delete");
@@ -172,28 +199,12 @@ public class ServiceAndGradeServiceTest {
     }
 
     @Test
+    @Order(9)
     public void deleteGradeForNonExistentStudentService(){
+        // Delete grade for non existent student
         assertEquals(0, studentAndGradeService.deleteGrade(0, "science"), "No student should have 0 id");
+        // Delete invalid grade where grade type does not exist
         assertEquals(0, studentAndGradeService.deleteGrade(1, "literature"), "No student should have a literature class");
-    }
-
-    @Test
-    public void getStudentService() {
-        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.getStudent(1);
-        assertNotNull(gradebookCollegeStudent);
-        assertEquals(1, gradebookCollegeStudent.getId());
-        assertEquals("Haifa", gradebookCollegeStudent.getFirstname());
-        assertEquals("Chagwey", gradebookCollegeStudent.getLastname());
-        assertEquals("haifachagwey@gmail.com", gradebookCollegeStudent.getEmailAddress());
-        assertTrue(gradebookCollegeStudent.getStudentGrades().getMathGradeResults().size() == 1);
-        assertTrue(gradebookCollegeStudent.getStudentGrades().getScienceGradeResults().size()== 1);
-        assertTrue(gradebookCollegeStudent.getStudentGrades().getHistoryGradeResults().size()== 1);
-    }
-
-    @Test
-    public void getNonExistentStudentService() {
-        GradebookCollegeStudent gradebookCollegeStudent = studentAndGradeService.getStudent(0);
-        assertNull(gradebookCollegeStudent);
     }
 
     @AfterEach
